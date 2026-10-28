@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+
+# documentação interna / Claude - não sobe pro GitHub
+*.md
+.claude/
+.cursor/
+.agents/
+.devin/
+/prisma/*.db
+/prisma/*.db-journal
