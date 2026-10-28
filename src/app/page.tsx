@@ -11,7 +11,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { LinkButton } from "@/components/ui/link-button";
+import { LinkButton } from "@/components/ui/button";
 import { MetricCard } from "@/components/ui/metric-card";
 import { buscarResumoDoMes } from "@/lib/db/resumo";
 import { formatarMesAno, formatarMoeda } from "@/lib/format";

@@ -4,6 +4,10 @@ export function formatarMoeda(valor: number) {
   return formatoMoeda.format(valor);
 }
 
+export function formatarData(data: Date) {
+  return data.toLocaleDateString("pt-BR");
+}
+
 export function formatarMesAno(data: Date) {
   const texto = data.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
   return texto.charAt(0).toUpperCase() + texto.slice(1);
