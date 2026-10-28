@@ -58,18 +58,13 @@ async function ResumoDoMes() {
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card>
-          <div className="flex items-start justify-between">
-            <span className="text-xs font-medium text-muted">Parcelas em atraso</span>
-            <span className="rounded-lg bg-red-100 p-2 text-danger">
-              <TriangleAlert size={20} />
-            </span>
-          </div>
-          <p className="mt-2 text-2xl font-semibold tabular-nums text-danger">{resumo.parcelasEmAtraso}</p>
-          <p className="mt-1 text-xs text-muted">
-            {formatarMoeda(resumo.valorEmAtraso)} vencidos e não pagos
-          </p>
-        </Card>
+        <MetricCard
+          label="Parcelas em atraso"
+          valor={String(resumo.parcelasEmAtraso)}
+          detalhe={`${formatarMoeda(resumo.valorEmAtraso)} vencidos e não pagos`}
+          icone={TriangleAlert}
+          tom="perigo"
+        />
 
         <Card className="md:col-span-2">
           <h2 className="text-lg font-medium">Atalhos</h2>

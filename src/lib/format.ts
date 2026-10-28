@@ -4,6 +4,12 @@ export function formatarMoeda(valor: number) {
   return formatoMoeda.format(valor);
 }
 
+const formatoPercentual = new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 });
+
+export function formatarPercentual(fracao: number) {
+  return formatoPercentual.format(fracao);
+}
+
 export function formatarData(data: Date) {
   return data.toLocaleDateString("pt-BR");
 }
