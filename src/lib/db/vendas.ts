@@ -36,3 +36,10 @@ export async function criarVenda({ numeroParcelas, ...venda }: NovaVenda) {
     },
   });
 }
+
+export async function listarVendas() {
+  return prisma.venda.findMany({
+    orderBy: [{ dataVenda: "desc" }, { id: "desc" }],
+    include: { cliente: { select: { nome: true } }, vendedor: { select: { nome: true } } },
+  });
+}

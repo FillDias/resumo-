@@ -13,6 +13,10 @@ export async function listarClientesComTotais() {
   }));
 }
 
+export async function listarNomesDeClientes() {
+  return prisma.cliente.findMany({ orderBy: { nome: "asc" }, select: { id: true, nome: true } });
+}
+
 export async function criarCliente(cliente: { nome: string; telefone: string; email: string | null }) {
   return prisma.cliente.create({ data: cliente });
 }
