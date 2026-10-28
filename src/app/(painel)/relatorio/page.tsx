@@ -7,6 +7,7 @@ import { MetricCard } from "@/components/ui/metric-card";
 import { Celula, Linha, Tabela } from "@/components/ui/tabela";
 import { buscarFechamentoDoMes } from "@/lib/db/resumo";
 import { formatarData, formatarMesAno, formatarMoeda, formatarPercentual } from "@/lib/format";
+import { usuarioLogado } from "@/lib/auth/sessao";
 
 function mesDaUrl(mes: string | string[] | undefined) {
   const [ano, numeroDoMes] = typeof mes === "string" && /^\d{4}-\d{2}$/.test(mes) ? mes.split("-").map(Number) : [];
@@ -35,7 +36,8 @@ export default function RelatorioPage({ searchParams }: PageProps<"/relatorio">)
 async function FechamentoDoMes({ searchParams }: Pick<PageProps<"/relatorio">, "searchParams">) {
   await connection();
   const referencia = mesDaUrl((await searchParams).mes);
-  const fechamento = await buscarFechamentoDoMes(referencia);
+  const usuario = await usuarioLogado();
+  const fechamento = await buscarFechamentoDoMes(usuario.id, referencia);
 
   return (
     <>

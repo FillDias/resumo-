@@ -7,6 +7,7 @@ import { listarVendas } from "@/lib/db/vendas";
 import { listarVendedores } from "@/lib/db/vendedores";
 import { formatarData, formatarDataParaInput, formatarMoeda } from "@/lib/format";
 import { VendaForm } from "./venda-form";
+import { usuarioLogado } from "@/lib/auth/sessao";
 
 export default function VendasPage() {
   return (
@@ -23,10 +24,11 @@ export default function VendasPage() {
 
 async function ConteudoDeVendas() {
   await connection();
+  const usuario = await usuarioLogado();
   const [clientes, vendedores, vendas] = await Promise.all([
-    listarNomesDeClientes(),
-    listarVendedores(),
-    listarVendas(),
+    listarNomesDeClientes(usuario.id),
+    listarVendedores(usuario.id),
+    listarVendas(usuario.id),
   ]);
 
   return (

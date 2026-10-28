@@ -6,9 +6,11 @@ import {
   CalendarClock,
   FileChartColumn,
   LayoutDashboard,
+  LogOut,
   ShoppingCart,
   Users,
 } from "lucide-react";
+import { sair } from "@/app/(auth)/actions";
 
 const itensMenu = [
   { href: "/", label: "Dashboard", icone: LayoutDashboard },
@@ -18,12 +20,12 @@ const itensMenu = [
   { href: "/relatorio", label: "Relatório", icone: FileChartColumn },
 ];
 
-export function Sidebar() {
+export function Sidebar({ conta }: { conta: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
     <aside className="w-60 shrink-0 border-r border-border bg-surface">
-      <div className="sticky top-0">
+      <div className="sticky top-0 flex h-screen flex-col">
         <div className="bg-brand-dark px-6 py-5">
           <span className="text-xl font-semibold text-white">Resumo+</span>
           <p className="text-xs text-white/70">Controle financeiro de vendas</p>
@@ -45,6 +47,19 @@ export function Sidebar() {
             );
           })}
         </nav>
+        <div className="mt-auto flex items-center justify-between gap-2 border-t border-border p-4">
+          {conta}
+          <form action={sair}>
+            <button
+              type="submit"
+              title="Sair"
+              aria-label="Sair"
+              className="rounded-lg p-2 text-muted hover:bg-bg hover:text-ink"
+            >
+              <LogOut size={18} />
+            </button>
+          </form>
+        </div>
       </div>
     </aside>
   );

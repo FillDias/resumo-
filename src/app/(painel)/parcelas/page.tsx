@@ -11,6 +11,7 @@ import { listarParcelas } from "@/lib/db/parcelas";
 import { formatarData, formatarMoeda } from "@/lib/format";
 import { filtrosDeSituacao, type FiltroSituacao } from "@/lib/types";
 import { marcarParcelaComoPaga } from "./actions";
+import { usuarioLogado } from "@/lib/auth/sessao";
 
 const opcoesDeSituacao: { id: FiltroSituacao; nome: string }[] = [
   { id: "todas", nome: "Todas" },
@@ -38,9 +39,10 @@ async function ConteudoDeParcelas({ searchParams }: Pick<PageProps<"/parcelas">,
   const clienteId = Number(cliente) || undefined;
   const filtroSituacao = filtrosDeSituacao.find((filtro) => filtro === situacao) ?? "todas";
 
+  const usuario = await usuarioLogado();
   const [clientes, parcelas] = await Promise.all([
-    listarNomesDeClientes(),
-    listarParcelas({ clienteId, situacao: filtroSituacao }),
+    listarNomesDeClientes(usuario.id),
+    listarParcelas({ usuarioId: usuario.id, clienteId, situacao: filtroSituacao }),
   ]);
   const naoPagas = parcelas.filter((parcela) => parcela.situacao !== "PAGA");
   const atrasadas = parcelas.filter((parcela) => parcela.situacao === "ATRASADA");

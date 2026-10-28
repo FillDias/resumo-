@@ -5,6 +5,7 @@ import { Celula, Linha, Tabela } from "@/components/ui/tabela";
 import { listarClientesComTotais } from "@/lib/db/clientes";
 import { formatarData, formatarMoeda } from "@/lib/format";
 import { ClienteForm } from "./cliente-form";
+import { usuarioLogado } from "@/lib/auth/sessao";
 
 export default function ClientesPage() {
   return (
@@ -26,7 +27,8 @@ export default function ClientesPage() {
 
 async function ListaDeClientes() {
   await connection();
-  const clientes = await listarClientesComTotais();
+  const usuario = await usuarioLogado();
+  const clientes = await listarClientesComTotais(usuario.id);
 
   return (
     <Card className="mt-4">

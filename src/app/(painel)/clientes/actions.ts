@@ -2,6 +2,7 @@
 
 import { refresh } from "next/cache";
 import { criarCliente } from "@/lib/db/clientes";
+import { usuarioLogado } from "@/lib/auth/sessao";
 
 type CamposCliente = { nome: string; telefone: string; email: string };
 
@@ -29,7 +30,8 @@ export async function cadastrarCliente(
 
   if (Object.keys(erros).length > 0) return { erros, valores };
 
-  await criarCliente({ ...valores, email: valores.email || null });
+  const usuario = await usuarioLogado();
+  await criarCliente({ ...valores, email: valores.email || null, usuarioId: usuario.id });
   refresh();
   return { sucesso: true };
 }

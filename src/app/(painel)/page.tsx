@@ -15,6 +15,7 @@ import { LinkButton } from "@/components/ui/button";
 import { MetricCard } from "@/components/ui/metric-card";
 import { buscarResumoDoMes } from "@/lib/db/resumo";
 import { formatarMesAno, formatarMoeda } from "@/lib/format";
+import { usuarioLogado } from "@/lib/auth/sessao";
 
 export default function DashboardPage() {
   return (
@@ -30,7 +31,8 @@ export default function DashboardPage() {
 async function ResumoDoMes() {
   await connection();
   const hoje = new Date();
-  const resumo = await buscarResumoDoMes(hoje);
+  const usuario = await usuarioLogado();
+  const resumo = await buscarResumoDoMes(usuario.id, hoje);
 
   return (
     <>
