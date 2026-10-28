@@ -8,3 +8,9 @@ export type NovaVenda = {
   numeroParcelas?: number;
   dataVenda: Date;
 };
+
+export type SituacaoParcela = "PAGA" | "PENDENTE" | "ATRASADA";
+
+export const filtrosDeSituacao = ["todas", "pendentes", "atrasadas", "pagas"] as const;
+
+export type FiltroSituacao = (typeof filtrosDeSituacao)[number];

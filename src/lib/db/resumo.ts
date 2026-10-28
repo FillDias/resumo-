@@ -1,10 +1,9 @@
 import { prisma } from "./prisma";
+import { inicioDeHoje } from "./parcelas";
 
 export async function buscarResumoDoMes(referencia: Date) {
   const inicioDoMes = new Date(referencia.getFullYear(), referencia.getMonth(), 1);
   const inicioDoProximoMes = new Date(referencia.getFullYear(), referencia.getMonth() + 1, 1);
-  const inicioDeHoje = new Date();
-  inicioDeHoje.setHours(0, 0, 0, 0);
 
   const [vendasPorTipo, recebido, emAberto, emAtraso] = await Promise.all([
     prisma.venda.groupBy({
@@ -22,7 +21,7 @@ export async function buscarResumoDoMes(referencia: Date) {
       _count: true,
     }),
     prisma.parcela.aggregate({
-      where: { status: { not: "PAGA" }, dataVencimento: { lt: inicioDeHoje } },
+      where: { status: { not: "PAGA" }, dataVencimento: { lt: inicioDeHoje() } },
       _sum: { valor: true },
       _count: true,
     }),

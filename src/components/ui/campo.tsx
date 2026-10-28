@@ -32,13 +32,13 @@ export function CampoSelect({
   label: string;
   name: string;
   erro?: string;
-  placeholder: string;
-  opcoes: { id: number; nome: string }[];
+  placeholder?: string;
+  opcoes: { id: number | string; nome: string }[];
 }) {
   return (
     <Rotulo label={label} erro={erro}>
       <select className={`${estiloCampo} ${erro ? "border-danger" : "border-border"}`} {...props}>
-        <option value="">{placeholder}</option>
+        {placeholder && <option value="">{placeholder}</option>}
         {opcoes.map((opcao) => (
           <option key={opcao.id} value={opcao.id}>
             {opcao.nome}
