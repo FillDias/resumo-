@@ -1,30 +1,19 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
-import {
-  CalendarClock,
-  CircleDollarSign,
-  FileChartColumn,
-  HandCoins,
-  Plus,
-  TriangleAlert,
-  UserPlus,
-  Wallet,
-} from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { CalendarClock, FileChartColumn, Plus, UserPlus } from "lucide-react";
 import { LinkButton } from "@/components/ui/button";
-import { MetricCard } from "@/components/ui/metric-card";
+import { CabecalhoDaPagina } from "@/components/ui/cabecalho-da-pagina";
+import { Card } from "@/components/ui/card";
+import { Metricas } from "@/components/ui/metricas";
+import { usuarioLogado } from "@/lib/auth/sessao";
 import { buscarResumoDoMes } from "@/lib/db/resumo";
 import { formatarMesAno, formatarMoeda } from "@/lib/format";
-import { usuarioLogado } from "@/lib/auth/sessao";
 
 export default function DashboardPage() {
   return (
-    <>
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
-      <Suspense fallback={<p className="mt-6 text-muted">Carregando resumo...</p>}>
-        <ResumoDoMes />
-      </Suspense>
-    </>
+    <Suspense fallback={<p className="text-muted">Carregando resumo...</p>}>
+      <ResumoDoMes />
+    </Suspense>
   );
 }
 
@@ -36,60 +25,56 @@ async function ResumoDoMes() {
 
   return (
     <>
-      <p className="mt-1 text-muted">Resumo financeiro de {formatarMesAno(hoje).toLowerCase()}</p>
+      <CabecalhoDaPagina titulo="Dashboard" descricao={`Resumo financeiro de ${formatarMesAno(hoje).toLowerCase()}`}>
+        <LinkButton href="/vendas" className="w-full sm:w-auto">
+          <Plus size={18} />
+          Nova venda
+        </LinkButton>
+      </CabecalhoDaPagina>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <MetricCard
-          label="Total vendido no mês"
-          valor={formatarMoeda(resumo.totalVendido)}
-          detalhe={`À vista ${formatarMoeda(resumo.vendidoAVista)} · Parcelado ${formatarMoeda(resumo.vendidoParcelado)}`}
-          icone={CircleDollarSign}
-        />
-        <MetricCard
-          label="Total recebido no mês"
-          valor={formatarMoeda(resumo.totalRecebido)}
-          detalhe="Vendas à vista e parcelas pagas"
-          icone={HandCoins}
-        />
-        <MetricCard
-          label="Valor em aberto"
-          valor={formatarMoeda(resumo.valorEmAberto)}
-          detalhe={`${resumo.parcelasEmAberto} parcelas a receber`}
-          icone={Wallet}
-        />
-      </div>
+      <Metricas
+        itens={[
+          {
+            label: "Vendido no mês",
+            valor: formatarMoeda(resumo.totalVendido),
+            detalhe: `À vista ${formatarMoeda(resumo.vendidoAVista)} · Parcelado ${formatarMoeda(resumo.vendidoParcelado)}`,
+          },
+          {
+            label: "Recebido no mês",
+            valor: formatarMoeda(resumo.totalRecebido),
+            detalhe: "Vendas à vista e parcelas pagas",
+          },
+          {
+            label: "Em aberto",
+            valor: formatarMoeda(resumo.valorEmAberto),
+            detalhe: `${resumo.parcelasEmAberto} parcelas a receber`,
+          },
+          {
+            label: "Em atraso",
+            valor: formatarMoeda(resumo.valorEmAtraso),
+            detalhe: `${resumo.parcelasEmAtraso} parcelas vencidas sem pagamento`,
+            destaqueDePerigo: true,
+          },
+        ]}
+      />
 
-      <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <MetricCard
-          label="Parcelas em atraso"
-          valor={String(resumo.parcelasEmAtraso)}
-          detalhe={`${formatarMoeda(resumo.valorEmAtraso)} vencidos e não pagos`}
-          icone={TriangleAlert}
-          tom="perigo"
-        />
-
-        <Card className="md:col-span-2">
-          <h2 className="text-lg font-medium">Atalhos</h2>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <LinkButton href="/vendas">
-              <Plus size={18} />
-              Nova venda
-            </LinkButton>
-            <LinkButton href="/clientes" variante="secundario">
-              <UserPlus size={18} />
-              Novo cliente
-            </LinkButton>
-            <LinkButton href="/parcelas" variante="secundario">
-              <CalendarClock size={18} />
-              Ver parcelas
-            </LinkButton>
-            <LinkButton href="/relatorio" variante="secundario">
-              <FileChartColumn size={18} />
-              Relatório do mês
-            </LinkButton>
-          </div>
-        </Card>
-      </div>
+      <Card className="mt-6">
+        <h2 className="text-base font-semibold">Atalhos</h2>
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:flex sm:flex-wrap">
+          <LinkButton href="/clientes" variante="secundario">
+            <UserPlus size={18} />
+            Novo cliente
+          </LinkButton>
+          <LinkButton href="/parcelas?situacao=atrasadas" variante="secundario">
+            <CalendarClock size={18} />
+            Ver parcelas em atraso
+          </LinkButton>
+          <LinkButton href="/relatorio" variante="secundario">
+            <FileChartColumn size={18} />
+            Relatório do mês
+          </LinkButton>
+        </div>
+      </Card>
     </>
   );
 }

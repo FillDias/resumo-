@@ -1,21 +1,21 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
+import { CabecalhoDaPagina } from "@/components/ui/cabecalho-da-pagina";
 import { Card } from "@/components/ui/card";
 import { Celula, Linha, Tabela } from "@/components/ui/tabela";
+import { usuarioLogado } from "@/lib/auth/sessao";
 import { listarClientesComTotais } from "@/lib/db/clientes";
 import { formatarData, formatarMoeda } from "@/lib/format";
 import { BotaoExcluirCliente } from "./botao-excluir-cliente";
 import { ClienteForm } from "./cliente-form";
-import { usuarioLogado } from "@/lib/auth/sessao";
 
 export default function ClientesPage() {
   return (
     <>
-      <h1 className="text-2xl font-semibold">Clientes</h1>
-      <p className="mt-1 text-muted">Salões e profissionais atendidos pela distribuidora</p>
+      <CabecalhoDaPagina titulo="Clientes" descricao="Salões e profissionais atendidos pela distribuidora" />
 
-      <Card className="mt-6">
-        <h2 className="mb-4 text-lg font-medium">Novo cliente</h2>
+      <Card>
+        <h2 className="mb-4 text-base font-semibold">Novo cliente</h2>
         <ClienteForm />
       </Card>
 
@@ -32,39 +32,53 @@ async function ListaDeClientes() {
   const clientes = await listarClientesComTotais(usuario.id);
 
   return (
-    <Card className="mt-4">
-      <h2 className="mb-4 text-lg font-medium">Clientes cadastrados ({clientes.length})</h2>
-      <Tabela
-        colunas={[
-          { titulo: "Cliente" },
-          { titulo: "Telefone" },
-          { titulo: "E-mail" },
-          { titulo: "Vendas", numerica: true },
-          { titulo: "Total comprado", numerica: true },
-          { titulo: "Cadastrado em", numerica: true },
-          { titulo: "Ações", numerica: true },
-        ]}
-      >
-        {clientes.map((cliente) => (
-          <Linha key={cliente.id}>
-            <Celula className="font-medium">{cliente.nome}</Celula>
-            <Celula>{cliente.telefone}</Celula>
-            <Celula className={cliente.email ? "" : "text-muted"}>{cliente.email ?? "—"}</Celula>
-            <Celula numerica>{cliente.quantidadeDeVendas}</Celula>
-            <Celula numerica className="font-semibold">
-              {formatarMoeda(cliente.totalComprado)}
-            </Celula>
-            <Celula numerica>{formatarData(cliente.createdAt)}</Celula>
-            <Celula numerica className="py-1">
-              <BotaoExcluirCliente
-                clienteId={cliente.id}
-                nome={cliente.nome}
-                temVendas={cliente.quantidadeDeVendas > 0}
-              />
-            </Celula>
-          </Linha>
-        ))}
-      </Tabela>
+    <Card className="mt-6">
+      <h2 className="mb-4 text-base font-semibold">
+        Clientes cadastrados <span className="font-normal text-muted">({clientes.length})</span>
+      </h2>
+      {clientes.length === 0 ? (
+        <p className="py-6 text-center text-muted">Nenhum cliente cadastrado ainda.</p>
+      ) : (
+        <Tabela
+          colunas={[
+            { titulo: "Cliente" },
+            { titulo: "Telefone" },
+            { titulo: "E-mail" },
+            { titulo: "Vendas", numerica: true },
+            { titulo: "Total comprado", numerica: true },
+            { titulo: "Cadastrado em", numerica: true },
+            { titulo: "Ações", numerica: true },
+          ]}
+        >
+          {clientes.map((cliente) => (
+            <Linha key={cliente.id}>
+              <Celula rotulo="Cliente" className="font-medium">
+                {cliente.nome}
+              </Celula>
+              <Celula rotulo="Telefone">{cliente.telefone}</Celula>
+              <Celula rotulo="E-mail" className={`break-all ${cliente.email ? "" : "text-muted"}`}>
+                {cliente.email ?? "—"}
+              </Celula>
+              <Celula rotulo="Vendas" numerica>
+                {cliente.quantidadeDeVendas}
+              </Celula>
+              <Celula rotulo="Total comprado" numerica className="font-semibold">
+                {formatarMoeda(cliente.totalComprado)}
+              </Celula>
+              <Celula rotulo="Cadastrado em" numerica>
+                {formatarData(cliente.createdAt)}
+              </Celula>
+              <Celula rotulo="Ações" numerica className="md:py-1">
+                <BotaoExcluirCliente
+                  clienteId={cliente.id}
+                  nome={cliente.nome}
+                  temVendas={cliente.quantidadeDeVendas > 0}
+                />
+              </Celula>
+            </Linha>
+          ))}
+        </Tabela>
+      )}
     </Card>
   );
 }

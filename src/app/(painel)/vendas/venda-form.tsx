@@ -59,7 +59,7 @@ export function VendaForm({ clientes, vendedores, hoje }: { clientes: Opcao[]; v
                 role="radio"
                 aria-checked={tipo === opcao.valor}
                 onClick={() => setTipo(opcao.valor)}
-                className={`rounded-lg border px-3 py-2 font-medium ${
+                className={`h-10 rounded-lg border px-3 font-medium ${
                   tipo === opcao.valor ? "border-brand bg-brand-light text-brand" : "border-border text-muted hover:bg-bg"
                 }`}
               >
@@ -92,9 +92,9 @@ export function VendaForm({ clientes, vendedores, hoje }: { clientes: Opcao[]; v
         )}
       </div>
 
-      <div className="flex items-center justify-end gap-4">
-        {estado.mensagemSucesso && <span className="text-sm text-success">{estado.mensagemSucesso}</span>}
-        <Button type="submit" disabled={salvando}>
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end sm:gap-4">
+        {estado.mensagemSucesso && <span className="text-center text-sm text-success">{estado.mensagemSucesso}</span>}
+        <Button type="submit" disabled={salvando} className="w-full sm:w-auto">
           <Plus size={18} />
           {salvando ? "Salvando..." : "Registrar venda"}
         </Button>

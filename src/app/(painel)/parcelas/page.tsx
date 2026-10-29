@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CabecalhoDaPagina } from "@/components/ui/cabecalho-da-pagina";
 import { Card } from "@/components/ui/card";
 import { CampoSelect } from "@/components/ui/campo";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -23,10 +24,9 @@ const opcoesDeSituacao: { id: FiltroSituacao; nome: string }[] = [
 export default function ParcelasPage({ searchParams }: PageProps<"/parcelas">) {
   return (
     <>
-      <h1 className="text-2xl font-semibold">Parcelas</h1>
-      <p className="mt-1 text-muted">Parcelas semanais das vendas parceladas</p>
+      <CabecalhoDaPagina titulo="Parcelas" descricao="Parcelas semanais das vendas parceladas" />
 
-      <Suspense fallback={<p className="mt-6 text-muted">Carregando parcelas...</p>}>
+      <Suspense fallback={<p className="text-muted">Carregando parcelas...</p>}>
         <ConteudoDeParcelas searchParams={searchParams} />
       </Suspense>
     </>
@@ -50,7 +50,7 @@ async function ConteudoDeParcelas({ searchParams }: Pick<PageProps<"/parcelas">,
 
   return (
     <>
-      <Card className="mt-6">
+      <Card>
         <form action="/parcelas" className="flex flex-col gap-4 md:flex-row md:items-end">
           <div className="grid flex-1 grid-cols-1 gap-4 md:grid-cols-2">
             <CampoSelect
@@ -62,19 +62,22 @@ async function ConteudoDeParcelas({ searchParams }: Pick<PageProps<"/parcelas">,
             />
             <CampoSelect label="Situação" name="situacao" opcoes={opcoesDeSituacao} defaultValue={filtroSituacao} />
           </div>
-          <Button type="submit" variante="secundario">
+          <Button type="submit" variante="secundario" className="w-full md:w-auto">
             Filtrar
           </Button>
         </form>
       </Card>
 
-      <Card className="mt-4">
-        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-lg font-medium">{parcelas.length} parcelas</h2>
-          <p className="text-muted">
-            Em aberto <span className="font-semibold tabular-nums text-ink">{formatarMoeda(somar(naoPagas))}</span>
-            <span className="mx-2">·</span>
-            Em atraso <span className="font-semibold tabular-nums text-danger">{formatarMoeda(somar(atrasadas))}</span>
+      <Card className="mt-6">
+        <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+          <h2 className="text-base font-semibold">{parcelas.length} parcelas</h2>
+          <p className="flex flex-wrap gap-x-4 text-muted">
+            <span className="whitespace-nowrap">
+              Em aberto <span className="font-semibold tabular-nums text-ink">{formatarMoeda(somar(naoPagas))}</span>
+            </span>
+            <span className="whitespace-nowrap">
+              Em atraso <span className="font-semibold tabular-nums text-danger">{formatarMoeda(somar(atrasadas))}</span>
+            </span>
           </p>
         </div>
 
@@ -94,26 +97,30 @@ async function ConteudoDeParcelas({ searchParams }: Pick<PageProps<"/parcelas">,
           >
             {parcelas.map((parcela) => (
               <Linha key={parcela.id}>
-                <Celula className="font-medium">{parcela.venda.cliente.nome}</Celula>
-                <Celula numerica>{formatarData(parcela.venda.dataVenda)}</Celula>
-                <Celula numerica>
+                <Celula rotulo="Cliente" className="font-medium">
+                  {parcela.venda.cliente.nome}
+                </Celula>
+                <Celula rotulo="Venda em" numerica>
+                  {formatarData(parcela.venda.dataVenda)}
+                </Celula>
+                <Celula rotulo="Parcela" numerica>
                   {parcela.numero}/{parcela.venda.numeroParcelas}
                 </Celula>
-                <Celula numerica className={parcela.situacao === "ATRASADA" ? "font-medium text-danger" : ""}>
+                <Celula rotulo="Vencimento" numerica className={parcela.situacao === "ATRASADA" ? "font-medium text-danger" : ""}>
                   {formatarData(parcela.dataVencimento)}
                 </Celula>
-                <Celula numerica className="font-semibold">
+                <Celula rotulo="Valor" numerica className="font-semibold">
                   {formatarMoeda(parcela.valor)}
                 </Celula>
-                <Celula>
+                <Celula rotulo="Situação">
                   <StatusBadge situacao={parcela.situacao} />
                 </Celula>
-                <Celula numerica>
+                <Celula rotulo="Pagamento" numerica className="md:py-2">
                   {parcela.dataPagamento ? (
                     <span className="text-muted">Paga em {formatarData(parcela.dataPagamento)}</span>
                   ) : (
                     <form action={marcarParcelaComoPaga.bind(null, parcela.id)}>
-                      <Button type="submit" variante="secundario" className="px-3 py-1.5 text-xs">
+                      <Button type="submit" variante="secundario" className="h-8 px-3 text-xs">
                         <Check size={16} />
                         Marcar como paga
                       </Button>
