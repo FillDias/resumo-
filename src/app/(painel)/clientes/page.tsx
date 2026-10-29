@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Celula, Linha, Tabela } from "@/components/ui/tabela";
 import { listarClientesComTotais } from "@/lib/db/clientes";
 import { formatarData, formatarMoeda } from "@/lib/format";
+import { BotaoExcluirCliente } from "./botao-excluir-cliente";
 import { ClienteForm } from "./cliente-form";
 import { usuarioLogado } from "@/lib/auth/sessao";
 
@@ -41,6 +42,7 @@ async function ListaDeClientes() {
           { titulo: "Vendas", numerica: true },
           { titulo: "Total comprado", numerica: true },
           { titulo: "Cadastrado em", numerica: true },
+          { titulo: "Ações", numerica: true },
         ]}
       >
         {clientes.map((cliente) => (
@@ -53,6 +55,13 @@ async function ListaDeClientes() {
               {formatarMoeda(cliente.totalComprado)}
             </Celula>
             <Celula numerica>{formatarData(cliente.createdAt)}</Celula>
+            <Celula numerica className="py-1">
+              <BotaoExcluirCliente
+                clienteId={cliente.id}
+                nome={cliente.nome}
+                temVendas={cliente.quantidadeDeVendas > 0}
+              />
+            </Celula>
           </Linha>
         ))}
       </Tabela>
