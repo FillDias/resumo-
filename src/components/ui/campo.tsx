@@ -1,4 +1,5 @@
-const estiloCampo = "rounded-lg border bg-surface px-3 py-2 outline-none focus:border-brand focus:ring-2 focus:ring-brand/30";
+const estiloCampo =
+  "h-10 w-full min-w-0 rounded-lg border bg-surface px-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20";
 
 function Rotulo({ label, erro, children }: { label: string; erro?: string; children: React.ReactNode }) {
   return (

@@ -18,7 +18,12 @@ function gerarParcelas(valorTotal: number, numeroParcelas: number, dataVenda: Da
   });
 }
 
-export async function criarVenda({ numeroParcelas, ...venda }: NovaVenda) {
+export async function criarVenda(usuarioId: number, { numeroParcelas, ...venda }: NovaVenda) {
+  await Promise.all([
+    prisma.cliente.findFirstOrThrow({ where: { id: venda.clienteId, usuarioId } }),
+    prisma.vendedor.findFirstOrThrow({ where: { id: venda.vendedorId, usuarioId } }),
+  ]);
+
   if (venda.tipo === "AVISTA") {
     return prisma.venda.create({
       data: {
@@ -37,8 +42,9 @@ export async function criarVenda({ numeroParcelas, ...venda }: NovaVenda) {
   });
 }
 
-export async function listarVendas() {
+export async function listarVendas(usuarioId: number) {
   return prisma.venda.findMany({
+    where: { cliente: { usuarioId } },
     orderBy: [{ dataVenda: "desc" }, { id: "desc" }],
     include: { cliente: { select: { nome: true } }, vendedor: { select: { nome: true } } },
   });

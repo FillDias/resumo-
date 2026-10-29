@@ -3,6 +3,7 @@
 import { refresh } from "next/cache";
 import { criarVenda } from "@/lib/db/vendas";
 import { formatarDataParaInput } from "@/lib/format";
+import { usuarioLogado } from "@/lib/auth/sessao";
 
 const MAXIMO_DE_PARCELAS = 12;
 
@@ -49,7 +50,8 @@ export async function registrarVenda(
 
   if (Object.keys(erros).length > 0) return { erros, valores };
 
-  await criarVenda({
+  const usuario = await usuarioLogado();
+  await criarVenda(usuario.id, {
     clienteId: Number(valores.clienteId),
     vendedorId: Number(valores.vendedorId),
     tipo: parcelada ? "PARCELADA" : "AVISTA",

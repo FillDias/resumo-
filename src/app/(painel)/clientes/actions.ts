@@ -1,7 +1,8 @@
 "use server";
 
 import { refresh } from "next/cache";
-import { criarCliente } from "@/lib/db/clientes";
+import { criarCliente, excluirCliente } from "@/lib/db/clientes";
+import { usuarioLogado } from "@/lib/auth/sessao";
 
 type CamposCliente = { nome: string; telefone: string; email: string };
 
@@ -29,7 +30,15 @@ export async function cadastrarCliente(
 
   if (Object.keys(erros).length > 0) return { erros, valores };
 
-  await criarCliente({ ...valores, email: valores.email || null });
+  const usuario = await usuarioLogado();
+  await criarCliente({ ...valores, email: valores.email || null, usuarioId: usuario.id });
   refresh();
   return { sucesso: true };
+}
+
+export async function removerCliente(clienteId: number): Promise<{ erro?: string }> {
+  const usuario = await usuarioLogado();
+  const { excluido } = await excluirCliente(usuario.id, clienteId);
+  refresh();
+  return excluido ? {} : { erro: "Este cliente tem vendas registradas e não pode ser excluído." };
 }
