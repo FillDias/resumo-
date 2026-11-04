@@ -13,7 +13,7 @@ function situacaoDaParcela(parcela: { status: string; dataVencimento: Date }, ho
   return parcela.dataVencimento < hoje ? "ATRASADA" : "PENDENTE";
 }
 
-export async function listarParcelas(filtro: { clienteId?: number; situacao: FiltroSituacao }) {
+export async function listarParcelas(filtro: { usuarioId: number; clienteId?: number; situacao: FiltroSituacao }) {
   const hoje = inicioDeHoje();
   const condicaoPorSituacao: Record<FiltroSituacao, Prisma.ParcelaWhereInput> = {
     todas: {},
@@ -23,7 +23,7 @@ export async function listarParcelas(filtro: { clienteId?: number; situacao: Fil
   };
 
   const parcelas = await prisma.parcela.findMany({
-    where: { ...condicaoPorSituacao[filtro.situacao], venda: { clienteId: filtro.clienteId } },
+    where: { ...condicaoPorSituacao[filtro.situacao], venda: { clienteId: filtro.clienteId, cliente: { usuarioId: filtro.usuarioId } } },
     orderBy: [{ dataVencimento: "asc" }, { numero: "asc" }],
     include: {
       venda: { select: { numeroParcelas: true, dataVenda: true, cliente: { select: { nome: true } } } },
@@ -38,8 +38,8 @@ export async function listarParcelas(filtro: { clienteId?: number; situacao: Fil
   }));
 }
 
-export async function registrarPagamentoDaParcela(parcelaId: number, dataPagamento: Date) {
-  const parcela = await prisma.parcela.findUniqueOrThrow({ where: { id: parcelaId } });
+export async function registrarPagamentoDaParcela(usuarioId: number, parcelaId: number, dataPagamento: Date) {
+  const parcela = await prisma.parcela.findFirstOrThrow({ where: { id: parcelaId, venda: { cliente: { usuarioId } } } });
   if (parcela.status === "PAGA") return;
 
   await prisma.$transaction([

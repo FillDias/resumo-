@@ -8,11 +8,11 @@ function intervaloDoMes(referencia: Date) {
   };
 }
 
-async function buscarVendasERecebimentosDoMes(referencia: Date) {
+async function buscarVendasERecebimentosDoMes(usuarioId: number, referencia: Date) {
   const mes = intervaloDoMes(referencia);
   const [vendasPorTipo, recebido] = await Promise.all([
-    prisma.venda.groupBy({ by: ["tipo"], where: { dataVenda: mes }, _sum: { valorTotal: true } }),
-    prisma.pagamento.aggregate({ where: { dataPagamento: mes }, _sum: { valorPago: true } }),
+    prisma.venda.groupBy({ by: ["tipo"], where: { dataVenda: mes, cliente: { usuarioId } }, _sum: { valorTotal: true } }),
+    prisma.pagamento.aggregate({ where: { dataPagamento: mes, venda: { cliente: { usuarioId } } }, _sum: { valorPago: true } }),
   ]);
 
   const totalDoTipo = (tipo: "AVISTA" | "PARCELADA") =>
@@ -28,16 +28,16 @@ async function buscarVendasERecebimentosDoMes(referencia: Date) {
   };
 }
 
-export async function buscarResumoDoMes(referencia: Date) {
+export async function buscarResumoDoMes(usuarioId: number, referencia: Date) {
   const [vendasERecebimentos, emAberto, emAtraso] = await Promise.all([
-    buscarVendasERecebimentosDoMes(referencia),
+    buscarVendasERecebimentosDoMes(usuarioId, referencia),
     prisma.parcela.aggregate({
-      where: { status: { not: "PAGA" } },
+      where: { status: { not: "PAGA" }, venda: { cliente: { usuarioId } } },
       _sum: { valor: true },
       _count: true,
     }),
     prisma.parcela.aggregate({
-      where: { status: { not: "PAGA" }, dataVencimento: { lt: inicioDeHoje() } },
+      where: { status: { not: "PAGA" }, dataVencimento: { lt: inicioDeHoje() }, venda: { cliente: { usuarioId } } },
       _sum: { valor: true },
       _count: true,
     }),
@@ -52,12 +52,12 @@ export async function buscarResumoDoMes(referencia: Date) {
   };
 }
 
-export async function buscarFechamentoDoMes(referencia: Date) {
+export async function buscarFechamentoDoMes(usuarioId: number, referencia: Date) {
   const hoje = inicioDeHoje();
   const [vendasERecebimentos, parcelasDoMes] = await Promise.all([
-    buscarVendasERecebimentosDoMes(referencia),
+    buscarVendasERecebimentosDoMes(usuarioId, referencia),
     prisma.parcela.findMany({
-      where: { dataVencimento: intervaloDoMes(referencia) },
+      where: { dataVencimento: intervaloDoMes(referencia), venda: { cliente: { usuarioId } } },
       include: { venda: { select: { cliente: { select: { id: true, nome: true } } } } },
     }),
   ]);

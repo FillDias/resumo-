@@ -1,6 +1,9 @@
 import { prisma } from "../src/lib/db/prisma";
 import { criarVenda } from "../src/lib/db/vendas";
 import { registrarPagamentoDaParcela } from "../src/lib/db/parcelas";
+import { gerarHashDaSenha } from "../src/lib/auth/senha";
+
+const contaDeDemonstracao = { email: "contato@damassio.com.br", senha: "damassio123", cnpj: "11222333000181" };
 
 const vendedores = [
   { nome: "Renata Souza", email: "renata@damassio.com.br" },
@@ -58,18 +61,25 @@ async function main() {
   await prisma.venda.deleteMany();
   await prisma.cliente.deleteMany();
   await prisma.vendedor.deleteMany();
+  await prisma.sessao.deleteMany();
+  await prisma.usuario.deleteMany();
 
-  const vendedoresCriados = await Promise.all(vendedores.map((data) => prisma.vendedor.create({ data })));
+  const { senha, ...dadosDaConta } = contaDeDemonstracao;
+  const usuario = await prisma.usuario.create({
+    data: { ...dadosDaConta, senhaHash: await gerarHashDaSenha(senha) },
+  });
+
+  const vendedoresCriados = await Promise.all(vendedores.map((vendedor) => prisma.vendedor.create({ data: { ...vendedor, usuarioId: usuario.id } })));
   const clientesCriados = [];
   for (const [indice, cliente] of clientes.entries()) {
     clientesCriados.push(
-      await prisma.cliente.create({ data: { ...cliente, createdAt: diasAtrasAoMeioDia(70 - indice * 3) } }),
+      await prisma.cliente.create({ data: { ...cliente, usuarioId: usuario.id, createdAt: diasAtrasAoMeioDia(70 - indice * 3) } }),
     );
   }
 
   const agora = new Date();
   for (const venda of [...vendas].reverse()) {
-    const vendaCriada = await criarVenda({
+    const vendaCriada = await criarVenda(usuario.id, {
       clienteId: clientesCriados[venda.cliente].id,
       vendedorId: vendedoresCriados[venda.vendedor].id,
       tipo: venda.numeroParcelas ? "PARCELADA" : "AVISTA",
@@ -84,7 +94,7 @@ async function main() {
       take: venda.parcelasPagasMesmoVencidas,
     });
     for (const parcela of parcelasVencidas) {
-      await registrarPagamentoDaParcela(parcela.id, parcela.dataVencimento);
+      await registrarPagamentoDaParcela(usuario.id, parcela.id, parcela.dataVencimento);
     }
   }
 }

@@ -10,55 +10,77 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Usuario {
+  id         Int        @id @default(autoincrement())
+  email      String     @unique
+  senhaHash  String
+  cnpj       String     @unique
+  createdAt  DateTime   @default(now())
+  sessoes    Sessao[]
+  clientes   Cliente[]
+  vendedores Vendedor[]
+}
+
+model Sessao {
+  id        String   @id
+  usuarioId Int
+  expiraEm  DateTime
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+}
+
 model Cliente {
   id        Int      @id @default(autoincrement())
+  usuarioId Int
   nome      String
-  telefone  String 
+  telefone  String
   email     String?
   createdAt DateTime @default(now())
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
   vendas    Venda[]
 }
 
 model Vendedor {
-  id     Int     @id @default(autoincrement())
-  nome   String
-  email  String
-  vendas Venda[]
+  id        Int     @id @default(autoincrement())
+  usuarioId Int
+  nome      String
+  email     String
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+  vendas    Venda[]
 }
 
 model Venda {
-  id             Int        @id @default(autoincrement())
+  id             Int         @id @default(autoincrement())
   clienteId      Int
   vendedorId     Int
   tipo           TipoVenda
   valorTotal     Float
   numeroParcelas Int?
-  dataVenda      DateTime   @default(now())
-  cliente        Cliente    @relation(fields: [clienteId], references: [id])
-  vendedor       Vendedor   @relation(fields: [vendedorId], references: [id])
+  dataVenda      DateTime    @default(now())
+  cliente        Cliente     @relation(fields: [clienteId], references: [id])
+  vendedor       Vendedor    @relation(fields: [vendedorId], references: [id])
   parcelas       Parcela[]
   pagamentos     Pagamento[]
 }
 
 model Parcela {
-  id             Int            @id @default(autoincrement())
+  id             Int           @id @default(autoincrement())
   vendaId        Int
   numero         Int
   valor          Float
   dataVencimento DateTime
-  status         StatusParcela  @default(PENDENTE)
-  venda          Venda          @relation(fields: [vendaId], references: [id])
+  status         StatusParcela @default(PENDENTE)
+  venda          Venda         @relation(fields: [vendaId], references: [id])
   pagamentos     Pagamento[]
 }
 
 model Pagamento {
-  id            Int       @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   vendaId       Int
   parcelaId     Int?
   valorPago     Float
-  dataPagamento DateTime  @default(now())
-  venda         Venda     @relation(fields: [vendaId], references: [id])
-  parcela       Parcela?  @relation(fields: [parcelaId], references: [id])
+  dataPagamento DateTime @default(now())
+  venda         Venda    @relation(fields: [vendaId], references: [id])
+  parcela       Parcela? @relation(fields: [parcelaId], references: [id])
 }
 
 enum TipoVenda {
