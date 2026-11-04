@@ -1,5 +1,9 @@
+import type { TipoVenda } from "@prisma/client";
 import { prisma } from "./prisma";
 import { inicioDeHoje } from "./parcelas";
+import type { OrdemDeValor } from "../types";
+
+const LIMITE_DE_MAIORES_CLIENTES = 5;
 
 function intervaloDoMes(referencia: Date) {
   return {
@@ -92,5 +96,59 @@ export async function buscarFechamentoDoMes(usuarioId: number, referencia: Date)
     inadimplentes: [...inadimplentesPorCliente.entries()]
       .map(([clienteId, dados]) => ({ clienteId, ...dados }))
       .sort((a, b) => b.valor - a.valor),
+  };
+}
+
+async function incluirNomeDosClientes(
+  usuarioId: number,
+  compras: { clienteId: number; _count: number; _sum: { valorTotal: number | null } }[],
+) {
+  const clientes = await prisma.cliente.findMany({
+    where: { usuarioId, id: { in: compras.map((compra) => compra.clienteId) } },
+    select: { id: true, nome: true },
+  });
+  const nomePorId = new Map(clientes.map((cliente) => [cliente.id, cliente.nome]));
+
+  return compras.map((compra) => ({
+    clienteId: compra.clienteId,
+    nome: nomePorId.get(compra.clienteId)!,
+    quantidadeDeCompras: compra._count,
+    valorComprado: compra._sum.valorTotal ?? 0,
+  }));
+}
+
+export async function listarComprasPorClienteNoMes(
+  usuarioId: number,
+  referencia: Date,
+  filtro: { tipo?: TipoVenda; ordem: OrdemDeValor },
+) {
+  const compras = await prisma.venda.groupBy({
+    by: ["clienteId"],
+    where: { dataVenda: intervaloDoMes(referencia), tipo: filtro.tipo, cliente: { usuarioId } },
+    _count: true,
+    _sum: { valorTotal: true },
+    orderBy: { _sum: { valorTotal: filtro.ordem === "maior" ? "desc" : "asc" } },
+  });
+
+  return incluirNomeDosClientes(usuarioId, compras);
+}
+
+export async function listarMaioresClientesDoAno(usuarioId: number, ano: number) {
+  const doAno = { dataVenda: { gte: new Date(ano, 0, 1), lt: new Date(ano + 1, 0, 1) }, cliente: { usuarioId } };
+  const [compras, totalDoAno] = await Promise.all([
+    prisma.venda.groupBy({
+      by: ["clienteId"],
+      where: doAno,
+      _count: true,
+      _sum: { valorTotal: true },
+      orderBy: { _sum: { valorTotal: "desc" } },
+      take: LIMITE_DE_MAIORES_CLIENTES,
+    }),
+    prisma.venda.aggregate({ where: doAno, _sum: { valorTotal: true } }),
+  ]);
+
+  return {
+    totalVendidoNoAno: totalDoAno._sum.valorTotal ?? 0,
+    clientes: await incluirNomeDosClientes(usuarioId, compras),
   };
 }

@@ -14,3 +14,7 @@ export type SituacaoParcela = "PAGA" | "PENDENTE" | "ATRASADA";
 export const filtrosDeSituacao = ["todas", "pendentes", "atrasadas", "pagas"] as const;
 
 export type FiltroSituacao = (typeof filtrosDeSituacao)[number];
+
+export const ordensDeValor = ["maior", "menor"] as const;
+
+export type OrdemDeValor = (typeof ordensDeValor)[number];
