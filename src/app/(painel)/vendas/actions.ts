@@ -2,6 +2,7 @@
 
 import { refresh } from "next/cache";
 import { criarVenda } from "@/lib/db/vendas";
+import { criarVendedor } from "@/lib/db/vendedores";
 import { formatarDataParaInput } from "@/lib/format";
 import { usuarioLogado } from "@/lib/auth/sessao";
 
@@ -65,4 +66,33 @@ export async function registrarVenda(
       ? `Venda registrada com ${numeroParcelas} parcelas semanais.`
       : "Venda à vista registrada e quitada.",
   };
+}
+
+type CamposVendedor = { nome: string; email: string };
+
+export type EstadoCadastroVendedor = {
+  erros?: Partial<Record<keyof CamposVendedor, string>>;
+  valores?: CamposVendedor;
+  sucesso?: boolean;
+};
+
+export async function cadastrarVendedor(
+  _estadoAnterior: EstadoCadastroVendedor,
+  formData: FormData,
+): Promise<EstadoCadastroVendedor> {
+  const valores = {
+    nome: String(formData.get("nome")).trim(),
+    email: String(formData.get("email")).trim(),
+  };
+
+  const erros: EstadoCadastroVendedor["erros"] = {};
+  if (valores.nome.length < 3) erros.nome = "Informe o nome do vendedor.";
+  if (!/^\S+@\S+\.\S+$/.test(valores.email)) erros.email = "Informe um e-mail válido.";
+
+  if (Object.keys(erros).length > 0) return { erros, valores };
+
+  const usuario = await usuarioLogado();
+  await criarVendedor({ ...valores, usuarioId: usuario.id });
+  refresh();
+  return { sucesso: true };
 }

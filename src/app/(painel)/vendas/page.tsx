@@ -9,6 +9,7 @@ import { listarVendas } from "@/lib/db/vendas";
 import { listarVendedores } from "@/lib/db/vendedores";
 import { formatarData, formatarDataParaInput, formatarMoeda } from "@/lib/format";
 import { VendaForm } from "./venda-form";
+import { VendedorForm } from "./vendedor-form";
 
 export default function VendasPage() {
   return (
@@ -36,6 +37,12 @@ async function ConteudoDeVendas() {
       <Card>
         <h2 className="mb-4 text-base font-semibold">Nova venda</h2>
         <VendaForm clientes={clientes} vendedores={vendedores} hoje={formatarDataParaInput(new Date())} />
+      </Card>
+
+      <Card className="mt-6">
+        <h2 className="text-base font-semibold">Novo vendedor</h2>
+        <p className="mb-4 mt-1 text-sm text-muted">Depois de cadastrado, o vendedor já aparece na lista da nova venda.</p>
+        <VendedorForm />
       </Card>
 
       <Card className="mt-6">
