@@ -40,12 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-
-# documentação interna / Claude - não sobe pro GitHub
-*.md
-.claude/
-.cursor/
-.agents/
-.devin/
+# banco local
 /prisma/*.db
 /prisma/*.db-journal
