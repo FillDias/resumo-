@@ -43,3 +43,5 @@ next-env.d.ts
 # banco local
 /prisma/*.db
 /prisma/*.db-journal
+
+.vercel
